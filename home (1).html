@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ตลาดกลางผลไม้</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    .price-box {
+      font-size: 24px;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      width: 300px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ราคาผลไม้ในตลาดกลาง</h1>
+  <div class="price-box" id="price">กำลังโหลด...</div>
+
+  <script>
+    function updatePrice() {
+      fetch('/get-price')
+        .then(res => res.text())
+        .then(data => {
+          document.getElementById('price').innerHTML = data;
+        });
+    }
+
+    // อัปเดตทุก 5 วินาที
+    setInterval(updatePrice, 5000);
+    updatePrice();  // เรียกครั้งแรก
+  </script>
+
+</body>
+</html>

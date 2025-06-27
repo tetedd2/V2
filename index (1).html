@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ระบบตรวจโรคพืช</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>ระบบตรวจโรคพืช</h1>
+
+  <!-- แสดงผลกล้อง -->
+  <div id="webcam"></div>
+
+  <!-- แสดงผลการทำนาย -->
+  <div id="label-container"></div>
+
+  <!-- ข้อความสถานะ -->
+  <div id="message" class="message">กรุณาคลิก "เริ่มการจำแนก"</div>
+
+  <!-- ผลลัพธ์หลังทำนาย -->
+  <div id="resultDisplay"></div>
+
+  <!-- ปุ่มควบคุม -->
+  <div class="button-container">
+    <button id="startButton">เริ่มการจำแนก</button>
+    <button id="stopButton" disabled>หยุดกล้อง</button>
+    <button id="switchCameraButton" disabled>สลับกล้อง</button>
+  </div>
+
+  <!-- ปุ่มควบคุมเพิ่มเติม -->
+  <div id="actionButtons">
+    <p>เลือกดูข้อมูล:</p>
+    <button id="causeButton" disabled>สาเหตุ</button>
+    <button id="treatmentButton" disabled>รักษา</button>
+  </div>
+
+  <!-- ปุ่มซ่อนไว้ (ถ้ามี) -->
+  <div id="infoButtons" class="hidden">
+    <p>ข้อมูลเพิ่มเติมเกี่ยวกับโรคพืช</p>
+  </div>
+
+  <!-- Load Script -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/tmImage.min.js"></script> 
+  <script src="script.js"></script>
+</body>
+</html>
