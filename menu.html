@@ -22,9 +22,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            gap: 50px;
-            padding: 100px;
-            padding-bottom: 80px;
+            gap: 90px;
+            padding: 110px;
+            padding-bottom: 90px;
             /* เว้นที่ให้ปุ่มล่าง */
         }
         
@@ -56,54 +56,38 @@
             height: 100%;
             object-fit: contain;
         }
-    /* กล่องกลาง */
-    .center-wrapper {
-      flex: 1; /* ใช้พื้นที่ที่เหลือ */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-    }
+.center-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; /* ทำให้เต็มความสูงของหน้าจอ */
+}
 
-    .button-container-top {
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-      align-items: center;
-      justify-content: center;
-    }
+.button-container-top {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    width: 100%;
+    max-width: 80px;
+    align-items: center; /* จัดให้ปุ่มอยู่ตรงกลางแนวนอนใน container */
+}
 
-    .btn-top {
-      background-color: white;
-      padding: 0;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 150px;
-      height: 150px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-top:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-top:active {
-      transform: scale(0.98);
-    }
-
-    .btn-top img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-    }
+.btn-top {
+    background-color: orange;
+    padding: 0;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 150px;
+}
 
         
         .btn-top:nth-child(1) {
@@ -124,8 +108,8 @@
         }
         
         .btn-top img {
-            width: 300%; /* กำหนดขนาดรูปภาพ */
-            height: 300%; /* กำหนดขนาดรูปภาพ */
+            width: 400%; /* กำหนดขนาดรูปภาพ */
+            height: 250%; /* กำหนดขนาดรูปภาพ */
         }
         /* ปุ่มแนวนอนด้านล่าง ติดขอบล่างหน้าจอ */
         
