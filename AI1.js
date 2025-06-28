@@ -1,346 +1,264 @@
-// AI1.js - เวอร์ชันรวมปุ่มสาเหตุ/รักษา + ระบบกล้อง + ระบบจำแนก
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Modal } from 'react-native';
+import { Camera } from 'expo-camera';
+import * as tf from '@tensorflow/tfjs';
+import * as tmImage from '@teachablemachine/image';
+import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
+
+const TensorCamera = cameraWithTensors(Camera);
 const URL = "https://teachablemachine.withgoogle.com/models/l_zvMSkA3/";
-let model, labelContainer, maxPredictions;
-let isPredicting = false;
-let currentFacingMode = 'environment';
-let videoElement, stream;
 
-const messageElement = document.getElementById('message');
-const startButton = document.getElementById('startButton');
-const stopButton = document.getElementById('stopButton');
-const switchCameraButton = document.getElementById('switchCameraButton');
-const resultDisplayElement = document.getElementById('resultDisplay');
-const actionButtonsDiv = document.getElementById('actionButtons');
-const infoButtonsDiv = document.getElementById('infoButtons');
-const causeButton = document.getElementById('causeButton');
-const treatmentButton = document.getElementById('treatmentButton');
+export default function App() {
+  const [hasPermission, setHasPermission] = useState(null);
+  const [isModelReady, setIsModelReady] = useState(false);
+  const [prediction, setPrediction] = useState(null);
+  const [model, setModel] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
+  const cameraRef = useRef(null);
+  const [isPredicting, setIsPredicting] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState('');
 
-let predictionHistory = [];
-const REQUIRED_CONSISTENCY_TIME_MS = 2000;
-const REQUIRED_PROBABILITY = 0.9;
+  const REQUIRED_CONSISTENCY_TIME_MS = 2000;
+  const REQUIRED_PROBABILITY = 0.8;
+  const predictionHistoryRef = useRef([]);
 
-function toggleInfoButtons(show) {
-    infoButtonsDiv.classList.toggle('hidden', !show);
-    actionButtonsDiv.classList.toggle('hidden', show);
-}
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+      await tf.ready();
+      const loadedModel = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+      setModel(loadedModel);
+      setIsModelReady(true);
+    })();
+  }, []);
 
-function showMessage(text, type = '') {
-    messageElement.textContent = text;
-    messageElement.className = `message ${type}`.trim();
-}
+  const handleImageTensorReady = async (images) => {
+    const loop = async () => {
+      if (!isPredicting || !model) return;
+      const nextImageTensor = images.next().value;
+      if (nextImageTensor) {
+        const predictionResult = await model.predict(nextImageTensor);
+        predictionResult.sort((a, b) => b.probability - a.probability);
+        const top = predictionResult[0];
+        const currentTime = Date.now();
 
-function showError(text) {
-    showMessage(text, 'error');
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    switchCameraButton.disabled = true;
-}
-
-async function init() {
-    showMessage('กำลังโหลดโมเดลและตั้งค่ากล้อง...');
-    startButton.disabled = true;
-    stopButton.disabled = true;
-    switchCameraButton.disabled = true;
-    toggleInfoButtons(false);
-    resultDisplayElement.innerHTML = '';
-    predictionHistory = [];
-
-    async function predict() {
-    if (!videoElement || videoElement.readyState < 2) return;
-    const prediction = await model.predict(videoElement);
-    prediction.sort((a, b) => b.probability - a.probability);
-    const top = prediction[0];
-    const currentTime = Date.now();
-    if (top.probability > 0.7) {
-        predictionHistory.push({ className: top.className, probability: top.probability, time: currentTime });
-    } else {
-        predictionHistory = [];
-    }
-    predictionHistory = predictionHistory.filter(p => currentTime - p.time <= REQUIRED_CONSISTENCY_TIME_MS);
-
-    const consistent = predictionHistory.length > 0 &&
-        predictionHistory.every(p => p.className === top.className && p.probability >= REQUIRED_PROBABILITY) &&
-        (predictionHistory[predictionHistory.length - 1].time - predictionHistory[0].time >= REQUIRED_CONSISTENCY_TIME_MS);
-
-    if (consistent) {
-        handleFinalResult(top.className); // ส่ง className ไปยัง handleFinalResult
-    } else {
-        showResultHint(top);
-    }
-}
-
-    try {
-        model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
-        maxPredictions = model.getTotalClasses();
-    } catch (error) {
-        showError(`เกิดข้อผิดพลาดในการโหลดโมเดล: ${error.message}`);
-        return;
-    }
-
-    await setupCamera();
-
-    labelContainer = document.getElementById("label-container");
-    labelContainer.innerHTML = '';
-    for (let i = 0; i < maxPredictions; i++) {
-        labelContainer.appendChild(document.createElement("div"));
-    }
-
-    showMessage('พร้อมสำหรับการจำแนก!', 'success');
-    stopButton.disabled = false;
-    switchCameraButton.disabled = false;
-}
-
-async function setupCamera() {
-    if (stream) stream.getTracks().forEach(track => track.stop());
-
-    const constraints = {
-        video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: currentFacingMode }
-    };
-
-    try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-        videoElement = document.createElement('video');
-        videoElement.setAttribute('playsinline', true);
-        videoElement.muted = true;
-        videoElement.autoplay = true;
-        videoElement.srcObject = stream;
-
-        const webcamDiv = document.getElementById("webcam");
-        webcamDiv.innerHTML = '';
-        webcamDiv.appendChild(videoElement);
-
-        await new Promise((resolve) => {
-            videoElement.onloadedmetadata = () => resolve(videoElement.play());
-            setTimeout(resolve, 3000);
-        });
-
-        isPredicting = true;
-        window.requestAnimationFrame(loop);
-    } catch (error) {
-        let msg = error.name === 'NotAllowedError' ? 'ไม่ได้รับอนุญาตให้เข้าถึงกล้อง' :
-                  error.name === 'NotFoundError' ? 'ไม่พบกล้องในอุปกรณ์' :
-                  'เกิดข้อผิดพลาดในการเปิดกล้อง';
-        showError(msg);
-    }
-}
-
-async function loop() {
-    if (!isPredicting) return;
-    await predict();
-    window.requestAnimationFrame(loop);
-}
-
-async function predict() {
-    if (!videoElement || videoElement.readyState < 2) return;
-
-    const prediction = await model.predict(videoElement);
-    prediction.sort((a, b) => b.probability - a.probability);
-
-    const top = prediction[0];
-    const currentTime = Date.now();
-
-    if (top.probability > 0.7) {
-        predictionHistory.push({ className: top.className, probability: top.probability, time: currentTime });
-    } else {
-        predictionHistory = [];
-    }
-
-    predictionHistory = predictionHistory.filter(p => currentTime - p.time <= REQUIRED_CONSISTENCY_TIME_MS);
-
-    const consistent = predictionHistory.length > 0 &&
-        predictionHistory.every(p => p.className === top.className && p.probability >= REQUIRED_PROBABILITY) &&
-        (predictionHistory[predictionHistory.length - 1].time - predictionHistory[0].time >= REQUIRED_CONSISTENCY_TIME_MS);
-
-    if (consistent) {
-        handleFinalResult(top.className);
-    } else {
-        showResultHint(top);
-    }
-}
-
-function handleFinalResult(className) {
-    let resultText = {
-        'D1': '✅ ปลอดเชื้อโรค ✅',
-        'D2': '🚨 เป็นโรคจุดราขาว 🚨',
-        'D3': '🚨 เป็นโรคสนิม 🚨',
-        'D4': '🚨 เป็นโรคใบไหม้ 🚨',
-        'D5': '🚨 กรุณาถ่ายใหม่ 🚨',
-        'D6': '🚨 เอ๊ะ ยังไม่สุกน่ะ 🚨',
-        'D7': '🕐 รอต่อสัก 2-3 วัน 🕐',
-        'D8': '✅ พร้อมทานรสชาติหวาน ✅'
-        
-    }[className] || `💡 ตรวจพบ: ${className}`;
-
-    resultDisplayElement.innerHTML = `<h3>${resultText}</h3>`;
-    resultDisplayElement.className = 'important-message';
-
-    // ✅ ใช้ toggleInfoButtons หรือปรับ style ตรง ๆ ก็ได้
-    const shouldShowInfoButtons = ['D2', 'D3', 'D4', 'D11'].includes(className);
-    document.getElementById("actionButtons").style.display = shouldShowInfoButtons ? 'none' : 'block';
-    document.getElementById("infoButtons").style.display = shouldShowInfoButtons ? 'flex' : 'none';
-
-    stopCamera();
-}
- 
-// ย้ายปุ่ม "สาเหตุ" และ "วิธีรักษา" เข้าสู่ #resultDisplay
-function moveInfoButtonsToResultDisplay() {
-    const causeButton = document.getElementById('causeButton');
-    const treatmentButton = document.getElementById('treatmentButton');
-    const resultDisplay = document.getElementById('resultDisplay');
-
-    // ย้ายปุ่ม "สาเหตุ" และ "วิธีรักษา" เข้าสู่ #resultDisplay
-    resultDisplay.appendChild(causeButton);
-    resultDisplay.appendChild(treatmentButton);
-
-    // ลบ div #infoButtons ออกเพื่อไม่ให้มีปุ่มซ้ำ
-    const infoButtonsDiv = document.getElementById('infoButtons');
-    infoButtonsDiv.remove();
-}
-
-function showResultHint(top) {
-    const timeElapsed = predictionHistory.length > 0
-        ? predictionHistory[predictionHistory.length - 1].time - predictionHistory[0].time
-        : 0;
-    const remaining = Math.max(0, Math.ceil((REQUIRED_CONSISTENCY_TIME_MS - timeElapsed) / 1000));
-    resultDisplayElement.innerHTML = `กำลังรอการยืนยัน "${top.className}" (${(top.probability * 100).toFixed(1)}%)<br>ต้องมั่นใจต่อเนื่องอีกประมาณ ${remaining} วินาที`;
-    resultDisplayElement.className = 'info-message';
-}
-
-async function stopCamera() {
-    isPredicting = false;
-    if (stream) stream.getTracks().forEach(track => track.stop());
-    if (videoElement) videoElement.srcObject = null;
-    document.getElementById("webcam").innerHTML = '<p>กล้องหยุดทำงานแล้ว</p>';
-    showMessage('กล้องและโมเดลหยุดทำงานแล้ว');
-    labelContainer.innerHTML = '';
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    switchCameraButton.disabled = true;
-    predictionHistory = [];
-}
-
-async function switchCamera() {
-    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-    await stopCamera();
-    await setupCamera();
-    showMessage('พร้อมสำหรับการจำแนก!', 'success');
-    stopButton.disabled = false;
-    switchCameraButton.disabled = false;
-}
-
-startButton.addEventListener('click', init);
-stopButton.addEventListener('click', stopCamera);
-switchCameraButton.addEventListener('click', switchCamera);
-
-function toggleButtons(className) {
-    console.log("Handling buttons for class:", className); // เพิ่ม log เพื่อตรวจสอบ
-    const actionButtons = document.querySelectorAll('#actionButtons button');
-    const infoButtons = document.querySelectorAll('#infoButtons button');
-
-    // ตรวจสอบว่า.className ตรงกับ D4, D2, D3 หรือ D11
-    if (['D4', 'D2', 'D3', 'D11'].includes(className)) {
-        actionButtons.forEach(button => button.style.display = 'none');
-        infoButtons.forEach(button => button.style.display = 'block');
-    } else {
-        actionButtons.forEach(button => button.style.display = 'block');
-        infoButtons.forEach(button => button.style.display = 'none');
-    }
-}
-// ปุ่ม "สาเหตุ" และ "วิธีรักษา"
-causeButton.addEventListener('click', () => {
-    const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let url = 'bad.html';
-
-    if (resultText.includes('จุดราขาว')) {
-        url = 'bad2.html';
-    } else if (resultText.includes('สนิม')) {
-        url = 'bad3.html';
-    } else if (resultText.includes('ใบไหม้')) {
-        url = 'bad4.html';
-    }  else if (resultText.includes('ราขาว')) {
-        url = 'bad11.html';
-    }
-
-    const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
-    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
-});
-
-treatmentButton.addEventListener('click', () => {
-    const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let url = 'health.html';
-
-    if (resultText.includes('จุดราขาว')) {
-        url = 'health2.html';
-    } else if (resultText.includes('สนิม')) {
-        url = 'health3.html';
-    } else if (resultText.includes('ใบไหม้')) {
-        url = 'health4.html';
-    } else if (resultText.includes('ราขาว')) {
-        url = 'health11.html';
-    }
-
-    const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
-    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
-});
-
-function handleClassificationResult(label) {
-    const infoContainer = document.getElementById("infoContainer");
-    const resultMessage = document.getElementById("resultMessage");
-
-    // รายชื่อโรคที่จะแสดงปุ่ม
-    const showButtonsFor = ["D2", "D3", "D4", "D11"];
-
-    if (showButtonsFor.includes(label)) {
-        // ตั้งชื่อโรคให้ตรงตาม label
-        let name = "";
-        switch (label) {
-            case "D2":
-                name = "โรคจุดราขาว";
-                break;
-            case "D3":
-                name = "โรคใบสนิม";
-                break;
-            case "D4":
-                name = "โรคใบไหม้";
-                break;
-    
+        if (top.probability > 0.7) {
+          predictionHistoryRef.current.push({ className: top.className, probability: top.probability, time: currentTime });
+        } else {
+          predictionHistoryRef.current = [];
         }
 
-        resultMessage.textContent = `🚨 เป็น${name} (${label}) 🚨`;
-        infoContainer.classList.remove("hidden");
-    } else {
-        infoContainer.classList.add("hidden");
-    }
+        predictionHistoryRef.current = predictionHistoryRef.current.filter(p => currentTime - p.time <= REQUIRED_CONSISTENCY_TIME_MS);
 
-    // หากต้องการแสดงผล label ตรงอื่น:
-    const labelContainer = document.getElementById("label-container");
-    if (labelContainer) {
-        labelContainer.textContent = "Label: " + label;
+        const consistent = predictionHistoryRef.current.length > 0 &&
+          predictionHistoryRef.current.every(p => p.className === top.className && p.probability >= REQUIRED_PROBABILITY) &&
+          (predictionHistoryRef.current[predictionHistoryRef.current.length - 1].time - predictionHistoryRef.current[0].time >= REQUIRED_CONSISTENCY_TIME_MS);
+
+        if (consistent) {
+          setPrediction(top.className);
+          predictionHistoryRef.current = []; // Reset for next prediction
+        }
+      }
+      requestAnimationFrame(loop);
+    };
+    loop();
+  };
+
+  const handleStartPrediction = () => {
+    setPrediction(null); // Clear previous prediction
+    setIsPredicting(true); // Start new prediction
+  };
+
+  const handleStopPrediction = () => {
+    setIsPredicting(false); // Stop prediction
+  };
+
+  const diseaseInfo = {
+    D2: {
+      cause: 'เกิดจากเชื้อราในสิ่งแวดล้อมชื้นจัด ทำให้เกิดจุดขาว ๆ บนใบไม้หรือผลไม้',
+      treatment: 'ตัดส่วนที่เป็นโรคออก ใช้สารป้องกันเชื้อราฉีดพ่นเป็นระยะ และควบคุมความชื้น'
+    },
+    D3: {
+      cause: 'เกิดจากเชื้อราชนิดหนึ่งที่มักระบาดในฤดูฝน ทำให้ใบมีสีสนิม',
+      treatment: 'ใช้สารเคมีที่เหมาะสม และตัดใบที่ติดเชื้อออกจากต้น'
+    },
+    D4: {
+      cause: 'ใบไหม้เกิดจากเชื้อราหรือเชื้อแบคทีเรียในสภาพอากาศร้อนชื้น',
+      treatment: 'ลดการให้น้ำบนใบ ใช้สารป้องกันเชื้อรา และเก็บใบที่ติดโรคออก'
     }
+  };
+
+  const showInfo = (type) => {
+    if (!prediction || !diseaseInfo[prediction]) return;
+    const content = type === 'cause' ? diseaseInfo[prediction].cause : diseaseInfo[prediction].treatment;
+    setModalContent(content);
+    setModalVisible(true);
+  };
+
+  const renderResult = () => {
+    if (!prediction) return null;
+
+    let resultText = {
+      'D1': '✅ ปลอดเชื้อโรค ✅',
+      'D2': '🚨 เป็นโรคจุดราขาว 🚨',
+      'D3': '🚨 เป็นโรคสนิม 🚨',
+      'D4': '🚨 เป็นโรคใบไหม้ 🚨',
+      'D5': '🚨 กรุณาถ่ายใหม่ 🚨',
+      'D6': '🚨 เอ๊ะ ยังไม่สุกน่ะ 🚨',
+      'D7': '🕐 รอต่อสัก 2-3 วัน 🕐',
+      'D8': '✅ พร้อมทานรสชาติหวาน ✅'
+    }[prediction] || `💡 ตรวจพบ: ${prediction}`;
+
+    const showButtons = ['D2', 'D3', 'D4'].includes(prediction);
+
+    return (
+      <View style={styles.resultBox}>
+        <Text style={styles.resultText}>{resultText}</Text>
+        {showButtons && (
+          <View style={styles.infoButtons}>
+            <TouchableOpacity style={styles.infoButton} onPress={() => showInfo('cause')}>
+              <Text style={styles.infoButtonText}>ดูสาเหตุ</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.infoButton} onPress={() => showInfo('treatment')}>
+              <Text style={styles.infoButtonText}>วิธีรักษา</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  if (hasPermission === null || !isModelReady) {
+    return <View style={styles.center}><ActivityIndicator size="large" /><Text>กำลังโหลด...</Text></View>;
+  }
+  if (hasPermission === false) {
+    return <View style={styles.center}><Text>ไม่ได้รับอนุญาตให้เข้าถึงกล้อง</Text></View>;
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      {isPredicting ? (
+        <TensorCamera
+          style={styles.camera}
+          type={type}
+          cameraTextureHeight={1920}
+          cameraTextureWidth={1080}
+          resizeHeight={224}
+          resizeWidth={224}
+          resizeDepth={3}
+          onReady={handleImageTensorReady}
+          autorender={false}
+        />
+      ) : (
+        <Camera style={styles.camera} type={type} ref={cameraRef} />
+      )}
+
+      <View style={styles.controls}>
+        <TouchableOpacity style={styles.button} onPress={handleStartPrediction}>
+          <Text style={styles.buttonText}>เริ่มจำแนก</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleStopPrediction}>
+          <Text style={styles.buttonText}>หยุดจำแนก</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => setType(prev => prev === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}>
+          <Text style={styles.buttonText}>สลับกล้อง</Text>
+        </TouchableOpacity>
+      </View>
+
+      {renderResult()}
+
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <ScrollView>
+              <Text style={styles.modalText}>{modalContent}</Text>
+            </ScrollView>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>ปิด</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
 }
 
-
-// เมื่อโหลดหน้าเว็บ
-window.addEventListener('DOMContentLoaded', () => {
-    toggleInfoButtons(false);
-    stopButton.disabled = true;
-    switchCameraButton.disabled = true;
+const styles = StyleSheet.create({
+  camera: {
+    flex: 1,
+  },
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  button: {
+    padding: 10,
+    backgroundColor: '#2b8a3e',
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultBox: {
+    padding: 15,
+    backgroundColor: '#f1f1f1',
+    alignItems: 'center',
+  },
+  resultText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  infoButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  infoButton: {
+    backgroundColor: '#1971c2',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginHorizontal: 5,
+  },
+  infoButtonText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBox: {
+    margin: 30,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  modalText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  closeButton: {
+    marginTop: 15,
+    alignSelf: 'center',
+    padding: 10,
+    backgroundColor: '#e03131',
+    borderRadius: 6,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
 });
-
-window.addEventListener('beforeunload', stopCamera);
-function captureImage() {
-    if (!videoElement) return;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoElement, 0, 0);
-
-    const imageDataURL = canvas.toDataURL('image/jpeg');
-
-    // แสดงผลลัพธ์ หรือส่งไป server ก็ได้
-    document.getElementById('resultDisplay').innerHTML = `<img src="${imageDataURL}" width="100%">`;
-}
