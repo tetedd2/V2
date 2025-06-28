@@ -169,7 +169,6 @@ function handleFinalResult(className) {
         'D6': '🚨 เอ๊ะ ยังไม่สุกน่ะ 🚨',
         'D7': '🕐 รอต่อสัก 2-3 วัน 🕐',
         'D8': '✅ พร้อมทานรสชาติหวาน ✅'
-
         
     }[className] || `💡 ตรวจพบ: ${className}`;
 
@@ -177,7 +176,7 @@ function handleFinalResult(className) {
     resultDisplayElement.className = 'important-message';
 
     // ✅ ใช้ toggleInfoButtons หรือปรับ style ตรง ๆ ก็ได้
-    const shouldShowInfoButtons = ['V1', 'V2', 'V7', 'V8'].includes(className);
+    const shouldShowInfoButtons = ['D2', 'D3', 'D4', 'D11'].includes(className);
     document.getElementById("actionButtons").style.display = shouldShowInfoButtons ? 'none' : 'block';
     document.getElementById("infoButtons").style.display = shouldShowInfoButtons ? 'flex' : 'none';
 
@@ -249,16 +248,16 @@ function toggleButtons(className) {
     }
 }
 // ปุ่ม "สาเหตุ" และ "วิธีรักษา"
- causeButton.addEventListener('click', () => {
+causeButton.addEventListener('click', () => {
     const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
     let url = 'bad.html';
 
     if (resultText.includes('จุดราขาว')) {
-        url = 'ai1m.html';
+        url = 'bad2.html';
     } else if (resultText.includes('สนิม')) {
-        url = 'ai1m2.html';
+        url = 'bad3.html';
     } else if (resultText.includes('ใบไหม้')) {
-        url = 'ai1m3.html';
+        url = 'bad4.html';
     }  else if (resultText.includes('ราขาว')) {
         url = 'bad11.html';
     }
@@ -290,7 +289,7 @@ function handleClassificationResult(label) {
     const resultMessage = document.getElementById("resultMessage");
 
     // รายชื่อโรคที่จะแสดงปุ่ม
-   const showButtonsFor = ["D2", "D3", "D4", "D11"];
+    const showButtonsFor = ["D2", "D3", "D4", "D11"];
 
     if (showButtonsFor.includes(label)) {
         // ตั้งชื่อโรคให้ตรงตาม label
