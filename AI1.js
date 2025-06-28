@@ -59,6 +59,7 @@ export default function App() {
         if (consistent) {
           setPrediction(top.className);
           predictionHistoryRef.current = []; // Reset for next prediction
+          setIsPredicting(false); // Reset after prediction
         }
       }
       requestAnimationFrame(loop);
@@ -69,10 +70,6 @@ export default function App() {
   const handleStartPrediction = () => {
     setPrediction(null); // Clear previous prediction
     setIsPredicting(true); // Start new prediction
-  };
-
-  const handleStopPrediction = () => {
-    setIsPredicting(false); // Stop prediction
   };
 
   const diseaseInfo = {
@@ -159,7 +156,7 @@ export default function App() {
         <TouchableOpacity style={styles.button} onPress={handleStartPrediction}>
           <Text style={styles.buttonText}>เริ่มจำแนก</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleStopPrediction}>
+        <TouchableOpacity style={styles.button} onPress={() => setIsPredicting(false)}>
           <Text style={styles.buttonText}>หยุดจำแนก</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => setType(prev => prev === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}>
