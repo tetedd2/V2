@@ -234,116 +234,92 @@ startButton.addEventListener('click', init);
 stopButton.addEventListener('click', stopCamera);
 switchCameraButton.addEventListener('click', switchCamera);
 
-// function toggleButtons(className) {
-//     console.log("Handling buttons for class:", className); // เพิ่ม log เพื่อตรวจสอบ
-//     const actionButtons = document.querySelectorAll('#actionButtons button');
-//     const infoButtons = document.querySelectorAll('#infoButtons button');
-// }
+function toggleButtons(className) {
+    console.log("Handling buttons for class:", className); // เพิ่ม log เพื่อตรวจสอบ
+    const actionButtons = document.querySelectorAll('#actionButtons button');
+    const infoButtons = document.querySelectorAll('#infoButtons button');
 
-async function stopCamera() {
-    isPredicting = false;
-    if (stream) stream.getTracks().forEach(track => track.stop());
-    if (videoElement) videoElement.srcObject = null;
-    document.getElementById("webcam").innerHTML = '<p>กล้องหยุดทำงานแล้ว</p>';
-    showMessage('กล้องและโมเดลหยุดทำงานแล้ว');
-    labelContainer.innerHTML = '';
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    switchCameraButton.disabled = true;
-    predictionHistory = [];
+    // ตรวจสอบว่า.className ตรงกับ D4, D2, D3 หรือ D11
+    if (['D4', 'D2', 'D3', 'D11'].includes(className)) {
+        actionButtons.forEach(button => button.style.display = 'none');
+        infoButtons.forEach(button => button.style.display = 'block');
+    } else {
+        actionButtons.forEach(button => button.style.display = 'block');
+        infoButtons.forEach(button => button.style.display = 'none');
+    }
 }
-
-async function switchCamera() {
-    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-    await stopCamera();
-    await setupCamera();
-    showMessage('พร้อมสำหรับการจำแนก!', 'success');
-    stopButton.disabled = false;
-    switchCameraButton.disabled = false;
-}
-
-startButton.addEventListener('click', init);
-stopButton.addEventListener('click', stopCamera);
-switchCameraButton.addEventListener('click', switchCamera);
-
-// ฟังก์ชันแสดงรูปภาพ PNG
-function showImage(imageUrl) {
-    const existingModal = document.getElementById('imageModal');
-    if (existingModal) existingModal.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'imageModal';
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
-    modal.style.display = 'flex';
-    modal.style.justifyContent = 'center';
-    modal.style.alignItems = 'center';
-    modal.style.zIndex = '9999';
-
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = 'Disease Info';
-    img.style.maxWidth = '90%';
-    img.style.maxHeight = '80vh';
-    img.style.objectFit = 'contain';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '❌';
-    closeBtn.style.position = 'absolute';
-    closeBtn.style.top = '20px';
-    closeBtn.style.right = '20px';
-    closeBtn.style.fontSize = '24px';
-    closeBtn.style.color = '#fff';
-    closeBtn.style.background = 'transparent';
-    closeBtn.style.border = 'none';
-    closeBtn.style.cursor = 'pointer';
-
-    closeBtn.addEventListener('click', () => modal.remove());
-
-    modal.appendChild(img);
-    modal.appendChild(closeBtn);
-    document.body.appendChild(modal);
-}
-
-// ปุ่ม "สาเหตุ"
-causeButton.addEventListener('click', () => {
+// ปุ่ม "สาเหตุ" และ "วิธีรักษา"
+ causeButton.addEventListener('click', () => {
     const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let imageUrl = '';
+    let url = 'bad.html';
 
     if (resultText.includes('จุดราขาว')) {
-        imageUrl = '14.png';
+        url = 'ai1m.html';
     } else if (resultText.includes('สนิม')) {
-        imageUrl = '16.png';
+        url = 'ai1m2.html';
     } else if (resultText.includes('ใบไหม้')) {
-        imageUrl = '12.png';
-    } else if (resultText.includes('ราขาว')) {
-        imageUrl = '201.png';
+        url = 'ai1m3.html';
+    }  else if (resultText.includes('ราขาว')) {
+        url = 'bad11.html';
     }
 
-    if (imageUrl) showImage(imageUrl);
+    const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
+    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
 });
 
-// ปุ่ม "วิธีรักษา"
 treatmentButton.addEventListener('click', () => {
     const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let imageUrl = '';
+    let url = 'health.html';
 
     if (resultText.includes('จุดราขาว')) {
-        imageUrl = '15.png';
+        url = 'health2.html';
     } else if (resultText.includes('สนิม')) {
-        imageUrl = 'health3.png';
+        url = 'health3.html';
     } else if (resultText.includes('ใบไหม้')) {
-        imageUrl = 'health4.png';
+        url = 'health4.html';
     } else if (resultText.includes('ราขาว')) {
-        imageUrl = 'health11.png';
+        url = 'health11.html';
     }
 
-    if (imageUrl) showImage(imageUrl);
+    const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
+    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
 });
+
+function handleClassificationResult(label) {
+    const infoContainer = document.getElementById("infoContainer");
+    const resultMessage = document.getElementById("resultMessage");
+
+    // รายชื่อโรคที่จะแสดงปุ่ม
+   const showButtonsFor = ["D2", "D3", "D4", "D11"];
+
+    if (showButtonsFor.includes(label)) {
+        // ตั้งชื่อโรคให้ตรงตาม label
+        let name = "";
+        switch (label) {
+            case "D2":
+                name = "โรคจุดราขาว";
+                break;
+            case "D3":
+                name = "โรคใบสนิม";
+                break;
+            case "D4":
+                name = "โรคใบไหม้";
+                break;
+    
+        }
+
+        resultMessage.textContent = `🚨 เป็น${name} (${label}) 🚨`;
+        infoContainer.classList.remove("hidden");
+    } else {
+        infoContainer.classList.add("hidden");
+    }
+
+    // หากต้องการแสดงผล label ตรงอื่น:
+    const labelContainer = document.getElementById("label-container");
+    if (labelContainer) {
+        labelContainer.textContent = "Label: " + label;
+    }
+}
 
 
 // เมื่อโหลดหน้าเว็บ
@@ -351,5 +327,6 @@ window.addEventListener('DOMContentLoaded', () => {
     toggleInfoButtons(false);
     stopButton.disabled = true;
     switchCameraButton.disabled = true;
-    window.addEventListener('beforeunload', stopCamera);
 });
+
+window.addEventListener('beforeunload', stopCamera);
