@@ -168,7 +168,7 @@ function handleFinalResult(className) {
         'V5': '🕐 รอต่อสัก 2-3 วัน 🕐',
         'V6': '✅ เก็บขายได้ราคาดี ✅',
         'V7': '🚨 เพลี้ยไฟ 🚨',
-        'V8': '🚨 หนอนกิน 🚨'
+        'V8': '🚨 หนอนกิน 🚨',
         'V9': '🚨 กรุณาถ่ายใหม่ 🚨'
         
     }[className] || `💡 ตรวจพบ: ${className}`;
@@ -275,6 +275,7 @@ treatmentButton.addEventListener('click', () => {
         url = 'health3.html';
     } else if (resultText.includes('เพลี้ยไฟ')) {
         url = 'health4.html';
+    }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
     window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
