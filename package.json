@@ -1,0 +1,15 @@
+{
+  "name": "camera-app",
+  "version": "1.0.0",
+  "description": "Camera App with Capacitor",
+  "scripts": {
+    "start": "npx http-server ."
+  },
+  "type": "module",
+  "dependencies": {
+    "@capacitor/camera": "^5.0.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

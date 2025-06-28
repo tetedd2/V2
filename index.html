@@ -1,48 +1,35 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teachable Machine Image Model</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background-color: #f4f7f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <title>Camera App</title>
+  <script type="module" src="main.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
 
-        .logo {
-            width: 400px;
-            max-width: 400px;
-            height: auto;
-        }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin-top: 1rem;
+    }
 
-        .status-text {
-            font-size: 20px;
-            color: #333;
-            margin-top: 20px;
-        }
-    </style>
+    img {
+      width: 100%;
+      max-width: 320px;
+      margin-top: 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+    }
+  </style>
 </head>
-
 <body>
-    <!-- โลโก้ตรงกลางจอ -->
-    <img src="777.png" alt="โลโก้" class="logo">
-    <div class="status-text">กำลังเริ่มระบบ...</div>
-
-    <!-- JavaScript สำหรับเปลี่ยนหน้า -->
-    <script>
-        setTimeout(function () {
-            window.location.href = "login.html";
-        }, 2000);
-    </script>
+  <h1>📷 ถ่ายภาพด้วยกล้อง</h1>
+  <button id="takePhotoButton">ถ่ายภาพ</button>
+  <br />
+  <img id="photo" alt="แสดงภาพที่ถ่าย" />
 </body>
-
 </html>
