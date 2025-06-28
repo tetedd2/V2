@@ -177,7 +177,7 @@ function handleFinalResult(className) {
     resultDisplayElement.className = 'important-message';
 
     // ✅ ใช้ toggleInfoButtons หรือปรับ style ตรง ๆ ก็ได้
-    const shouldShowInfoButtons = ['V1', 'V2', 'V7', 'V8'].includes(className);
+    const shouldShowInfoButtons = ['D1', 'D5', 'D7', 'D8'].includes(className);
     document.getElementById("actionButtons").style.display = shouldShowInfoButtons ? 'none' : 'block';
     document.getElementById("infoButtons").style.display = shouldShowInfoButtons ? 'flex' : 'none';
 
@@ -240,9 +240,23 @@ function toggleButtons(className) {
     const infoButtons = document.querySelectorAll('#infoButtons button');
 
     // ตรวจสอบว่า.className ตรงกับ D4, D2, D3 หรือ D11
-    if (['D4', 'D2', 'D3', 'D11'].includes(className)) {
+    if (['D2', 'D3', 'D4', 'D11'].includes(className))
+            if (showButtonsFor.includes(label)) {
+        // ตั้งชื่อโรคให้ตรงตาม label
+        let name = "";
+        switch (label) {
+            case "D2":
+                name = "โรคจุดราขาว";
+                break;
+            case "D3":
+                name = "โรคใบสนิม";
+                break;
+            case "D4":
+                name = "โรคใบไหม้";
+                break;
         actionButtons.forEach(button => button.style.display = 'none');
         infoButtons.forEach(button => button.style.display = 'block');
+        }
     } else {
         actionButtons.forEach(button => button.style.display = 'block');
         infoButtons.forEach(button => button.style.display = 'none');
@@ -253,13 +267,13 @@ causeButton.addEventListener('click', () => {
     const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
     let imageUrl = '';
     if (resultText.includes('จุดราขาว')) {
-        imageUrl = 'images/bad2.jpg'; // ใส่ path รูปของโรคจุดราขาว
+        imageUrl = '14.png'; // ใส่ path รูปของโรคจุดราขาว
     } else if (resultText.includes('สนิม')) {
-        imageUrl = 'images/bad3.jpg'; // ใส่ path รูปของโรคสนิม
+        imageUrl = '16.png'; // ใส่ path รูปของโรคสนิม
     } else if (resultText.includes('ใบไหม้')) {
-        imageUrl = 'images/bad4.jpg'; // ใส่ path รูปของโรคใบไหม้
+        imageUrl = '12.png'; // ใส่ path รูปของโรคใบไหม้
     } else if (resultText.includes('ราขาว')) {
-        imageUrl = 'images/bad11.jpg'; // ใส่ path รูปของโรคราขาว
+        imageUrl = '14.png'; // ใส่ path รูปของโรคราขาว
     }
 
     if (imageUrl) {
@@ -281,13 +295,13 @@ causeButton.addEventListener('click', () => {
     const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
     let imageUrl = '';
     if (resultText.includes('จุดราขาว')) {
-        imageUrl = 'images/bad2.jpg'; // ใส่ path รูปของโรคจุดราขาว
+        imageUrl = '15.png'; // ใส่ path รูปของโรคจุดราขาว
     } else if (resultText.includes('สนิม')) {
-        imageUrl = 'images/bad3.jpg'; // ใส่ path รูปของโรคสนิม
+        imageUrl = '17.png'; // ใส่ path รูปของโรคสนิม
     } else if (resultText.includes('ใบไหม้')) {
-        imageUrl = 'images/bad4.jpg'; // ใส่ path รูปของโรคใบไหม้
+        imageUrl = '13.png'; // ใส่ path รูปของโรคใบไหม้
     } else if (resultText.includes('ราขาว')) {
-        imageUrl = 'images/bad11.jpg'; // ใส่ path รูปของโรคราขาว
+        imageUrl = '15.png'; // ใส่ path รูปของโรคราขาว
     }
 
     if (imageUrl) {
