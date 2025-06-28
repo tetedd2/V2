@@ -31,7 +31,28 @@
             margin-bottom: 20px;
         }
         /* กลุ่มปุ่มพืช */
+        
+        .logo-container {
+            position: fixed;
+            top: -70px; /* ปรับตำแหน่งให้สูงขึ้น */
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 100%;
+            max-width: 500px; /* กำหนดขนาดสูงสุด */
+            height: 300px; /* กำหนดความสูง */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
 
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         .button-container-top {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -79,62 +100,6 @@
             border: 4px dashed brown;
         }
         /* ปุ่มด้านล่าง */
-        
-        .button-container-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0; /* ตั้งค่าใหม่ */
-    width: 100%; /* ให้เต็มหน้าจอ */
-    display: flex;
-    justify-content: space-around; /* กระจายปุ่มให้เท่าๆ กัน */
-    gap: 10px; /* ระยะห่างระหว่างปุ่ม */
-    background-color: white;
-    padding: 8px 0;
-    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-        .btn-top {
-            background-color: orange;
-            padding: 0; /* ลบ-padding เดิม */
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center; /* ปรับให้ข้อความอยู่ตรงกลาง */
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* ทำให้ไอคอนและข้อความอยู่ตรงกลาง */
-            width: 100%; /* กำหนดขนาดปุ่ม */
-            height: 200px; /* กำหนดขนาดปุ่ม */
-        }
-        
-        .btn-top:nth-child(1) {
-            background-color: rgb(255, 255, 255);
-        }
-        
-        .btn-top:nth-child(2) {
-            background-color: rgb(255, 255, 255);
-        }
-        
-        .btn-top:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.15);
-        }
-        
-        .btn-top:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-top img {
-            width: 100%; /* กำหนดขนาดรูปภาพ */
-            height: 100%; /* กำหนดขนาดรูปภาพ */
-            object-fit: cover; /* ทำให้รูปภาพเต็มพื้นที่โดยไม่บิดเบี้ยว */
-            border-radius: 6px;
-        }
-        /* ปุ่มแนวนอนด้านล่าง ติดขอบล่างหน้าจอ */
         
         .button-container-bottom {
     position: fixed;
@@ -250,6 +215,20 @@
             background-color: #ff9900;
             color: white;
         }
+        /* Responsive */
+        
+        @media (max-width: 480px) {
+            .button-container-top {
+                gap: 12px;
+            }
+            .btn-top {
+                border-radius: 14px;
+            }
+            .btn-bottom {
+                max-width: 50px;
+                height: 50px;
+            }
+        }
     </style>
 </head>
 
@@ -285,6 +264,10 @@
         <a href="menu.html" class="btn-bottom">
             <img src="1000.png" alt="MENU" />
         </a>
+    </div>
+    <!-- กล่องโลโก้ด้านบน -->
+    <div class="logo-container">
+        <img src="8000.png" alt="Logo" />
     </div>
 </body>
 
