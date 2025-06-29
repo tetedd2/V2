@@ -325,7 +325,7 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('beforeunload', stopCamera);
 
 // วิเคราะห์ภาพจากไฟล์ที่อัปโหลด
-document.getElementById("imageUpload").addEventListener("change", async function (event) {
+document.getElementById("uploadImage").addEventListener("change", async function (event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -334,20 +334,37 @@ document.getElementById("imageUpload").addEventListener("change", async function
         const image = new Image();
         image.src = e.target.result;
 
+        showMessage('กำลังวิเคราะห์ภาพ...');
+        resultDisplayElement.innerHTML = '';  // ล้างผลลัพธ์ก่อน
+
         image.onload = async function () {
-            // โหลดโมเดลหากยังไม่ได้โหลด
+            // โหลดโมเดลเพียงครั้งแรก
             if (!model) {
-                showMessage('กำลังโหลดโมเดล...');
-                model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
-                maxPredictions = model.getTotalClasses();
+                try {
+                    showMessage('กำลังโหลดโมเดล...');
+                    model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+                    maxPredictions = model.getTotalClasses();
+                    showMessage('โมเดลพร้อมใช้งาน!', 'success');
+                } catch (err) {
+                    showError('ไม่สามารถโหลดโมเดลได้: ' + err.message);
+                    return;
+                }
             }
 
-            const prediction = await model.predict(image);
-            prediction.sort((a, b) => b.probability - a.probability);
-            const top = prediction[0];
-
-            handleFinalResult(top.className);
+            // วิเคราะห์ภาพทุกครั้งที่มีการอัปโหลด
+            try {
+                const prediction = await model.predict(image);
+                prediction.sort((a, b) => b.probability - a.probability);
+                const top = prediction[0];
+                handleFinalResult(top.className);
+            } catch (err) {
+                showError('เกิดข้อผิดพลาดในการวิเคราะห์ภาพ: ' + err.message);
+            }
         };
     };
     reader.readAsDataURL(file);
+
+    // reset input เพื่อให้อัปโหลดรูปเดิมซ้ำได้
+    event.target.value = "";
 });
+
