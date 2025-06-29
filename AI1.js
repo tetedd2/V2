@@ -334,10 +334,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('beforeunload', stopCamera);
 // วิเคราะห์ภาพจากไฟล์ที่อัปโหลด
-document.getElementById("imageUpload").addEventListener("change", async function (event) {
+document.getElementById("uploadImage").addEventListener("change", async function (event) {
+
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = async function (e) {
         const image = new Image();
