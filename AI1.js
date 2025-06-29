@@ -169,6 +169,7 @@ function handleFinalResult(className) {
         'D6': '🚨 เอ๊ะ ยังไม่สุกน่ะ 🚨',
         'D7': '🕐 รอต่อสัก 2-3 วัน 🕐',
         'D8': '✅ พร้อมทานรสชาติหวาน ✅'
+
         
     }[className] || `💡 ตรวจพบ: ${className}`;
 
@@ -176,7 +177,7 @@ function handleFinalResult(className) {
     resultDisplayElement.className = 'important-message';
 
     // ✅ ใช้ toggleInfoButtons หรือปรับ style ตรง ๆ ก็ได้
-    const shouldShowInfoButtons = ['D2', 'D3', 'D4', 'D11'].includes(className);
+    const shouldShowInfoButtons = ['D2', 'D3', 'D4'].includes(className);
     document.getElementById("actionButtons").style.display = shouldShowInfoButtons ? 'none' : 'block';
     document.getElementById("infoButtons").style.display = shouldShowInfoButtons ? 'flex' : 'none';
 
@@ -239,7 +240,7 @@ function toggleButtons(className) {
     const infoButtons = document.querySelectorAll('#infoButtons button');
 
     // ตรวจสอบว่า.className ตรงกับ D4, D2, D3 หรือ D11
-    if (['D4', 'D2', 'D3', 'D11'].includes(className)) {
+    if (['D4', 'D2', 'D3',].includes(className)) {
         actionButtons.forEach(button => button.style.display = 'none');
         infoButtons.forEach(button => button.style.display = 'block');
     } else {
@@ -248,9 +249,11 @@ function toggleButtons(className) {
     }
 }
 // ปุ่ม "สาเหตุ" และ "วิธีรักษา"
+// Event listener for causeButton
+// Event listener for causeButton
 causeButton.addEventListener('click', () => {
-    const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let url = 'bad.html';
+    const resultText = resultDisplayElement.querySelector('h3, p')?.textContent.trim() || '';
+    let url = 'bad.html'; // ค่าเริ่มต้น
 
     if (resultText.includes('จุดราขาว')) {
         url = 'bad2.html';
@@ -258,17 +261,18 @@ causeButton.addEventListener('click', () => {
         url = 'bad3.html';
     } else if (resultText.includes('ใบไหม้')) {
         url = 'bad4.html';
-    }  else if (resultText.includes('ราขาว')) {
+    } else if (resultText.includes('ราขาว')) {
         url = 'bad11.html';
     }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
-    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
+    window.location.href = `${url}?disease=${encodeURIComponent(diseaseName)}`;
 });
 
+// Event listener for treatmentButton
 treatmentButton.addEventListener('click', () => {
-    const resultText = resultDisplayElement.querySelector('h3')?.textContent.trim() || '';
-    let url = 'health.html';
+    const resultText = resultDisplayElement.querySelector('h3, p')?.textContent.trim() || '';
+    let url = 'health.html'; // ค่าเริ่มต้น
 
     if (resultText.includes('จุดราขาว')) {
         url = 'health2.html';
@@ -281,7 +285,7 @@ treatmentButton.addEventListener('click', () => {
     }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
-    window.open(`${url}?disease=${encodeURIComponent(diseaseName)}`, '_blank');
+    window.location.href = `${url}?disease=${encodeURIComponent(diseaseName)}`;
 });
 
 function handleClassificationResult(label) {
@@ -289,7 +293,7 @@ function handleClassificationResult(label) {
     const resultMessage = document.getElementById("resultMessage");
 
     // รายชื่อโรคที่จะแสดงปุ่ม
-    const showButtonsFor = ["D2", "D3", "D4", "D11"];
+   const showButtonsFor = ["D2", "D3", "D4", "D11"];
 
     if (showButtonsFor.includes(label)) {
         // ตั้งชื่อโรคให้ตรงตาม label
