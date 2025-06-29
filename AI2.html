@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,14 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
@@ -24,7 +17,6 @@
             flex-direction: column;
             justify-content: space-between;
         }
-
         #container {
             flex: 1;
             display: flex;
@@ -34,7 +26,6 @@
             padding: 10px;
             overflow-y: auto;
         }
-
         #webcam {
             width: 200px;
             height: 200px;
@@ -48,7 +39,6 @@
             font-style: italic;
             margin: 20px 0;
         }
-
         #message {
             margin: 10px;
             padding: 10px;
@@ -58,68 +48,33 @@
             font-weight: bold;
             text-align: center;
         }
-
-        #actionButtons button {
+        #actionButtons button, #infoButtons button {
             width: 210px;
             height: 60px;
             margin: 10px auto;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        #actionButtons button img {
-            width: 200px;
-            height: auto;
-            object-fit: contain;
-        }
-
-        #infoButtons button {
-            width: 210px;
-            height: 60px;
-            margin: 10px auto;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
         }
-
-        #infoButtons button img {
-            width: 180px;
-            height: auto;
+        #actionButtons button img, #infoButtons button img {
+            width: 200px;
             object-fit: contain;
-            transition: transform 0.3s ease;
         }
-
-        button:hover img {
-            transform: scale(1.1);
-        }
-
-        button:active img {
-            transform: scale(0.98);
-        }
-
-        /* เพิ่ม CSS สำหรับ layout แนวตั้ง */
+        button:hover img { transform: scale(1.1); }
+        button:active img { transform: scale(0.98); }
         #infoButtons.vertical {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
         }
-
         #infoButtons.vertical button {
             width: 100%;
             max-width: 210px;
         }
-
-        #label-container {
-            display: none;
-        }
-
+        #label-container { display: none; }
         #resultDisplay {
             margin: 10px;
             padding: 10px;
@@ -128,7 +83,6 @@
             border: 1px solid #cce5ff;
             text-align: center;
         }
-
         .button-container-bottom {
             position: fixed;
             bottom: 0;
@@ -142,7 +96,6 @@
             box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
-
         .btn-bottom {
             background-color: transparent;
             border: none;
@@ -156,168 +109,88 @@
             padding: 0;
             text-decoration: none;
             transition: all 0.3s ease;
-            box-shadow: none;
         }
-
         .btn-bottom img {
             width: 80px;
             height: auto;
             object-fit: contain;
             display: block;
         }
-
-        .btn-bottom:hover {
-            transform: scale(1.05);
+        .btn-bottom:hover { transform: scale(1.05); }
+        .btn-bottom:active { transform: scale(0.98); }
+        .btn-bottom.home { background-color: #e74c3c; color: white; }
+        .btn-bottom.ai { background-color: #2ecc71; color: white; }
+        .btn-bottom.plant { background-color: #007bff; color: white; }
+        .btn-bottom.menu { background-color: #ff9900; color: white; }
+        #infoButtons.hidden { display: none; }
+        @media (max-width: 600px) {
+            .btn-bottom { flex-basis: calc(25% - 10px); }
+        }
+        #imageUpload {
+            margin: 10px 0;
+            padding: 5px;
         }
 
-        .btn-bottom:active {
-            transform: scale(0.98);
-        }
+        .custom-file-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 2px solid #ddd;
+    padding: 10px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #333;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
 
-        .btn-bottom.home {
-            background-color: #ffffff;
-        }
+.custom-file-upload:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
 
-        .btn-bottom.ai {
-            background-color: #ffffff;
-        }
+.custom-file-upload img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
 
-        .btn-bottom.plant {
-            background-color: #ffffff;
-        }
+.custom-file-upload input[type="file"] {
+    display: none;
+}
 
-        .btn-bottom.menu {
-            background-color: #ffffff;
-        }
-
-        .btn-bottom {
-            background-color: white;
-            color: #333;
-            padding: 0;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-        }
-
-        .btn-bottom img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .btn-bottom:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-bottom:active {
-            transform: scale(0.98);
-        }
-
-        .btn-bottom.home {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .btn-bottom.ai {
-            background-color: #2ecc71;
-            color: white;
-        }
-
-        .btn-bottom.plant {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-bottom.menu {
-            background-color: #ff9900;
-            color: white;
-        }
-
-        #infoButtons.hidden {
-            display: none;
-        }
-
-         @media (max-width: 600px) {
-            .button-container-top {
-                gap: 10px;
-            }
-            .btn-top {
-                height: 120px;
-                width: 120px;
-            }
-            .button-container-bottom {
-                flex-wrap: wrap;
-            }
-            .btn-bottom {
-                flex-basis: calc(25% - 10px);
-            }
-        }
-        
     </style>
 </head>
-
 <body>
     <div id="container">
-        <div id="webcam">
-            <p>กล้องจะปรากฏที่นี่</p>
-        </div>
-
+        <div id="webcam"><p>กล้องจะปรากฏที่นี่</p></div>
         <div id="message" class="message">คลิก "เริ่มการจำแนก" เพื่อเริ่มต้น</div>
+        <label class="custom-file-upload">
+    <input type="file" id="uploadImage" accept="image/*" />
+    
+    <span>เลือกรูปภาพ</span>
+</label>
 
-       <div id="actionButtons">
-    <button type="button" id="startButton">
-        <img src="7.png" alt="เริ่มการจำแนก">
-    </button>
-    <button type="button" id="stopButton" disabled>
-        <img src="9.png" alt="หยุดการจำแนก">
-    </button>
-    <button type="button" id="switchCameraButton" disabled>
-        <img src="10.png" alt="สลับกล้อง">
-    </button>
-</div>
-
- <div id="infoButtons" class="hidden vertical">
-            <button type="button" id="causeButton">
-                <img src="3.png" alt="สาเหตุ">
-            </button>
-            <button type="button" id="treatmentButton">
-                <img src="4.png" alt="รักษา">
-            </button>
+        <div id="actionButtons">
+            <button type="button" id="startButton"><img src="7.png" alt="เริ่มการจำแนก"></button>
+            <button type="button" id="stopButton" disabled><img src="9.png" alt="หยุดการจำแนก"></button>
+            <button type="button" id="switchCameraButton" disabled><img src="10.png" alt="สลับกล้อง"></button>
         </div>
-
+        <div id="infoButtons" class="hidden vertical">
+            <button type="button" id="causeButton"><img src="3.png" alt="สาเหตุ"></button>
+            <button type="button" id="treatmentButton"><img src="4.png" alt="รักษา"></button>
+        </div>
         <div id="label-container"></div>
-
-        <div id="resultDisplay">
-            <p>ผลลัพธ์การจำแนกจะแสดงที่นี่</p>
-        </div>
+        <div id="resultDisplay"><p>ผลลัพธ์การจำแนกจะแสดงที่นี่</p></div>
     </div>
-
     <div class="button-container-bottom">
-        <a href="Home999.html" class="btn-bottom">
-            <img src="60.png" alt="Home" />
-        </a>
-        <a href="Home.html" class="btn-bottom">
-            <img src="61.png" alt="AI" />
-        </a>
-        <a href="Home555.html" class="btn-bottom">
-            <img src="62.png" alt="วิธีปลูก" />
-        </a>
-        <a href="menu.html" class="btn-bottom">
-            <img src="1000.png" alt="MENU" />
-        </a>
+        <a href="Home999.html" class="btn-bottom"><img src="60.png" alt="Home" /></a>
+        <a href="Home.html" class="btn-bottom"><img src="61.png" alt="AI" /></a>
+        <a href="Home555.html" class="btn-bottom"><img src="62.png" alt="วิธีปลูก" /></a>
+        <a href="menu.html" class="btn-bottom"><img src="1000.png" alt="MENU" /></a>
     </div>
-
     <script src="AI2.js"></script>
 </body>
-
 </html>

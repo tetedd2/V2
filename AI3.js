@@ -250,11 +250,11 @@ causeButton.addEventListener('click', () => {
     let url = 'bad.html';
 
     if (resultText.includes('ใบไหม้')) {
-        url = 'bad6.html';
+        url = 'bad7.html';
     } else if (resultText.includes('เพลี้ยไฟ')) {
-        url = 'bad.html';
-    } else if (resultText.includes('ราขาว')) {
         url = 'bad8.html';
+    } else if (resultText.includes('ราขาว')) {
+        url = 'bad10.html';
     }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
@@ -266,9 +266,9 @@ treatmentButton.addEventListener('click', () => {
     let url = 'health.html';
 
     if (resultText.includes('ใบไหม้')) {
-        url = 'health6.html';
+        url = 'health9.html';
     } else if (resultText.includes('เพลี้ยไฟ')) {
-        url = 'health3.html';
+        url = 'health11.html';
     } else if (resultText.includes('ราขาว')) {
         url = 'health8.html';
     } 
@@ -322,3 +322,31 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('beforeunload', stopCamera);
+
+// วิเคราะห์ภาพจากไฟล์ที่อัปโหลด
+document.getElementById("imageUpload").addEventListener("change", async function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const image = new Image();
+        image.src = e.target.result;
+
+        image.onload = async function () {
+            // โหลดโมเดลหากยังไม่ได้โหลด
+            if (!model) {
+                showMessage('กำลังโหลดโมเดล...');
+                model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+                maxPredictions = model.getTotalClasses();
+            }
+
+            const prediction = await model.predict(image);
+            prediction.sort((a, b) => b.probability - a.probability);
+            const top = prediction[0];
+
+            handleFinalResult(top.className);
+        };
+    };
+    reader.readAsDataURL(file);
+});

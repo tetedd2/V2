@@ -256,13 +256,13 @@ causeButton.addEventListener('click', () => {
     let url = 'bad.html'; // ค่าเริ่มต้น
 
     if (resultText.includes('จุดราขาว')) {
-        url = 'bad2.html';
+        url = 'bad11.html';
     } else if (resultText.includes('สนิม')) {
         url = 'bad3.html';
     } else if (resultText.includes('ใบไหม้')) {
         url = 'bad4.html';
     } else if (resultText.includes('ราขาว')) {
-        url = 'bad11.html';
+        url = 'bad2.html';
     }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
@@ -279,9 +279,9 @@ treatmentButton.addEventListener('click', () => {
     } else if (resultText.includes('สนิม')) {
         url = 'health3.html';
     } else if (resultText.includes('ใบไหม้')) {
-        url = 'health4.html';
+        url = 'health.html';
     } else if (resultText.includes('ราขาว')) {
-        url = 'health11.html';
+        url = 'health4.html';
     }
 
     const diseaseName = resultText.replace(/[🚨✅]/g, '').trim();
@@ -333,3 +333,31 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('beforeunload', stopCamera);
+// วิเคราะห์ภาพจากไฟล์ที่อัปโหลด
+document.getElementById("imageUpload").addEventListener("change", async function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const image = new Image();
+        image.src = e.target.result;
+
+        image.onload = async function () {
+            // โหลดโมเดลหากยังไม่ได้โหลด
+            if (!model) {
+                showMessage('กำลังโหลดโมเดล...');
+                model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+                maxPredictions = model.getTotalClasses();
+            }
+
+            const prediction = await model.predict(image);
+            prediction.sort((a, b) => b.probability - a.probability);
+            const top = prediction[0];
+
+            handleFinalResult(top.className);
+        };
+    };
+    reader.readAsDataURL(file);
+});
+
