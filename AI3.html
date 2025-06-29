@@ -90,7 +90,7 @@
 
         #infoButtons button img {
             width: 180px;
-            height: 180px;
+            height: auto;
             object-fit: contain;
             transition: transform 0.3s ease;
         }
@@ -101,6 +101,19 @@
 
         button:active img {
             transform: scale(0.98);
+        }
+
+        /* เพิ่ม CSS สำหรับ layout แนวตั้ง */
+        #infoButtons.vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #infoButtons.vertical button {
+            width: 100%;
+            max-width: 210px;
         }
 
         #label-container {
@@ -116,68 +129,67 @@
             text-align: center;
         }
 
-       .button-container-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0; /* ตั้งค่าใหม่ */
-    width: 100%; /* ให้เต็มหน้าจอ */
-    display: flex;
-    justify-content: space-around; /* กระจายปุ่มให้เท่าๆ กัน */
-    gap: 10px; /* ระยะห่างระหว่างปุ่ม */
-    background-color: white;
-    padding: 8px 0;
-    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
+        .button-container-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            background-color: white;
+            padding: 8px 0;
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-.btn-bottom {
-    background-color: transparent; /* ทำให้พื้นหลังโปร่งใส */
-    border: none;                 /* ลบขอบ */
-    cursor: pointer;
-    flex: 1;                     /* ขยายปุ่มให้เต็มพื้นที่ */
-    height: 60px;                /* กำหนดความสูงของปุ่ม */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 0;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: none;             /* ลบเงา */
-}
+        .btn-bottom {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
 
-.btn-bottom img {
-    width: 80px;                 /* ปรับขนาดไอคอนให้เหมาะสม */
-    height: auto;
-    object-fit: contain;
-    display: block;
-}
+        .btn-bottom img {
+            width: 80px;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
 
-.btn-bottom:hover {
-    transform: scale(1.05);
-}
+        .btn-bottom:hover {
+            transform: scale(1.05);
+        }
 
-.btn-bottom:active {
-    transform: scale(0.98);
-}
-        /* สีปุ่มล่าง */
-        
+        .btn-bottom:active {
+            transform: scale(0.98);
+        }
+
         .btn-bottom.home {
             background-color: #ffffff;
         }
-        
+
         .btn-bottom.ai {
             background-color: #ffffff;
         }
-        
+
         .btn-bottom.plant {
             background-color: #ffffff;
         }
-        
+
         .btn-bottom.menu {
             background-color: #ffffff;
         }
-        
+
         .btn-bottom {
             background-color: white;
             color: #333;
@@ -195,44 +207,62 @@
             border-radius: 0;
             box-shadow: none;
         }
-        
+
         .btn-bottom img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .btn-bottom:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
-        
+
         .btn-bottom:active {
             transform: scale(0.98);
         }
-        
+
         .btn-bottom.home {
             background-color: #e74c3c;
             color: white;
         }
-        
+
         .btn-bottom.ai {
             background-color: #2ecc71;
             color: white;
         }
-        
+
         .btn-bottom.plant {
             background-color: #007bff;
             color: white;
         }
-        
+
         .btn-bottom.menu {
             background-color: #ff9900;
             color: white;
         }
-       #infoButtons.hidden {
-    display: none;
-}
+
+        #infoButtons.hidden {
+            display: none;
+        }
+
+         @media (max-width: 600px) {
+            .button-container-top {
+                gap: 10px;
+            }
+            .btn-top {
+                height: 120px;
+                width: 120px;
+            }
+            .button-container-bottom {
+                flex-wrap: wrap;
+            }
+            .btn-bottom {
+                flex-basis: calc(25% - 10px);
+            }
+        }
+        
     </style>
 </head>
 
@@ -256,14 +286,14 @@
     </button>
 </div>
 
-<div id="infoButtons" class="hidden">
-    <button type="button" id="causeButton">
-        <img src="3.png" alt="สาเหตุ">
-    </button>
-    <button type="button" id="treatmentButton">
-        <img src="4.png" alt="รักษา">
-    </button>
-</div>
+ <div id="infoButtons" class="hidden vertical">
+            <button type="button" id="causeButton">
+                <img src="3.png" alt="สาเหตุ">
+            </button>
+            <button type="button" id="treatmentButton">
+                <img src="4.png" alt="รักษา">
+            </button>
+        </div>
 
         <div id="label-container"></div>
 
