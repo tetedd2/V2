@@ -342,6 +342,8 @@ document.getElementById("imageUpload").addEventListener("change", async function
     reader.onload = async function (e) {
         const image = new Image();
         image.src = e.target.result;
+        console.log("📸 Image selected, loading...");
+        showMessage('กำลังวิเคราะห์ภาพ...');
 
         image.onload = async function () {
             // โหลดโมเดลหากยังไม่ได้โหลด
@@ -349,6 +351,8 @@ document.getElementById("imageUpload").addEventListener("change", async function
                 showMessage('กำลังโหลดโมเดล...');
                 model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
                 maxPredictions = model.getTotalClasses();
+                console.log("✅ Image loaded, predicting...");
+                showMessage('โมเดลพร้อมใช้งาน!', 'success');
             }
 
             const prediction = await model.predict(image);
