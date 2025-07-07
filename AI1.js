@@ -414,13 +414,13 @@ async function startClassification() {
     }
 
     // ซ่อนปุ่มเลือกภาพและถ่ายภาพเมื่อเริ่มการจำแนก
-    toggleVisibility("selectImage", false);
-    toggleVisibility("captureImage", false);
-    toggleVisibility("startButton", true);
+    toggleVisibility("selectImage", true);
+    toggleVisibility("captureImage", true);
+    toggleVisibility("startButton", false);
     toggleVisibility("confirmButton", false);
 
     // แสดงปุ่ม actionButtons หลังจากจำแนกเสร็จ
-    toggleVisibility("actionButtons", true);
+    toggleVisibility("actionButtons", false);
 }
 
 // ฟังก์ชันเมื่อกดปุ่มยืนยัน
